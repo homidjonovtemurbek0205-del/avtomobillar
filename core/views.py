@@ -1,28 +1,31 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 from rest_framework.views import APIView, Response
 from rest_framework.exceptions import NotFound
+
 from core.models import Avtomobil
 from core.serializers import AvtomobilSerializer
 
-class AvotmobillarListCreateView(APIView):
+
+# Create your views here.
+class AvtomobilListCreateView(APIView):
     def get(self, request):
         avtomobillar = Avtomobil.objects.all()
-        serializer = AvtomobilSerializer(avtomobillar, many = True)
+        serializer = AvtomobilSerializer(avtomobillar, many=True)
         return Response(serializer.data)
 
     def post(self, request):
         serializer = AvtomobilSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=201)
+
 
 class AvtomobilDetailView(APIView):
     def get(self, request, id):
         try:
             avtomobil = Avtomobil.objects.get(id=id)
         except Avtomobil.DoesNotExist:
-            raise NotFound("Avtomobil topilmadi")
-
+            NotFound("Avtomobil topilmadi")
         serializer = AvtomobilSerializer(avtomobil)
         return Response(serializer.data)
 
@@ -30,9 +33,16 @@ class AvtomobilDetailView(APIView):
         try:
             avtomobil = Avtomobil.objects.get(id=id)
         except Avtomobil.DoesNotExist:
-            raise NotFound("Avtomobil Topilmadi")
+            NotFound("Avtomobil topilmadi")
+        serializer = AvtomobilSerializer(isinstance=avtomobil, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.save())
 
-        s = AvtomobilSerializer(instance =avtomobil, data=request.data)
-        s.is_valid(raise_exception=True)
-        s.save()
-        return Response(s.data)
+    def delete(self, request, id):
+        try:
+            avtomobil = Avtomobil.objects.get(id=id)
+        except Avtomobil.DoesNotExist:
+            NotFound("Avtomobil topilmadi")
+        avtomobil.delete()
+        return Response(status=204)
